@@ -103,6 +103,8 @@
         max-width: 80%;
         word-wrap: break-word;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
       }
 
       .user-message {
@@ -117,6 +119,12 @@
         align-self: flex-start;
         color: #495057;
         border: 1px solid #ced4da;
+      }
+
+      .bot-message img {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
       }
 
       .message span {
@@ -190,7 +198,17 @@
           "message",
           sender === "user" ? "user-message" : "bot-message"
         );
-        messageElement.textContent = message;
+        
+        if (sender === "bot") {
+          const botIcon = document.createElement("img");
+          botIcon.src = "bot-icon.png";
+          botIcon.alt = "Bot Icon";
+          messageElement.appendChild(botIcon);
+        }
+
+        const textNode = document.createTextNode(message);
+        messageElement.appendChild(textNode);
+
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
       }
