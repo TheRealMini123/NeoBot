@@ -186,6 +186,7 @@
               data.choices[0]?.message?.content ||
               "I'm sorry, I didn't understand that.";
             appendMessage(botReply, "bot");
+            speak(botReply);
           }
         } catch (error) {
           console.error("Fetch error:", error);
@@ -213,6 +214,21 @@
 
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      function speak(message) {
+        const speech = new SpeechSynthesisUtterance(message);
+        speech.lang = "en-US";
+        speech.pitch = 1; // Natural pitch for a male voice
+        speech.rate = 1; // Normal speaking rate
+        speech.voice =
+          window.speechSynthesis
+            .getVoices()
+            .find(
+              (voice) =>
+                voice.name.includes("Google") && voice.gender === "male"
+            ) || null;
+        window.speechSynthesis.speak(speech);
       }
     </script>
   </body>
