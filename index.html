@@ -272,13 +272,14 @@
         speech.lang = "en-US";
         speech.pitch = 1; // Natural pitch for a male voice
         speech.rate = 1; // Normal speaking rate
+        // Fallback to default voice if specific voice isn't available
         speech.voice =
           window.speechSynthesis
             .getVoices()
             .find(
               (voice) =>
                 voice.name.includes("Google") && voice.gender === "male"
-            ) || null;
+            ) || window.speechSynthesis.getVoices()[0]; // Use the first available voice if no match found
         window.speechSynthesis.speak(speech);
       }
 
