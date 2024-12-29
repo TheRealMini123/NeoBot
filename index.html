@@ -103,6 +103,8 @@
         background-color: #ffffff;
         border-top: 1px solid #dee2e6;
         box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        justify-content: space-between;
+        align-items: center;
       }
 
       .input-container input {
@@ -153,12 +155,30 @@
     <script>
       const apiKey = "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";
 
+      // Clear conversation history from localStorage on page load
+      window.onload = function () {
+        localStorage.removeItem("conversation"); // Remove stored conversation
+      };
+
+      // Load stored conversation if available
+      const storedMessages =
+        JSON.parse(localStorage.getItem("conversation")) || [];
+
+      // Display previous messages
+      storedMessages.forEach((message) => {
+        appendMessage(message.text, message.sender);
+      });
+
       async function sendMessage() {
         const userInput = document.getElementById("userInput").value;
         if (!userInput.trim()) return;
 
         appendMessage(userInput, "user");
         document.getElementById("userInput").value = "";
+
+        // Store the user message in conversation history
+        storedMessages.push({ text: userInput, sender: "user" });
+        localStorage.setItem("conversation", JSON.stringify(storedMessages));
 
         try {
           const response = await fetch(
@@ -171,7 +191,10 @@
               },
               body: JSON.stringify({
                 model: "llama3-8b-8192",
-                messages: [{ role: "user", content: userInput }],
+                messages: storedMessages.map((msg) => ({
+                  role: msg.sender === "user" ? "user" : "assistant",
+                  content: msg.text,
+                })),
               }),
             }
           );
@@ -186,6 +209,14 @@
               data.choices[0]?.message?.content ||
               "I'm sorry, I didn't understand that.";
             appendMessage(botReply, "bot");
+
+            // Store the bot reply in the conversation history
+            storedMessages.push({ text: botReply, sender: "bot" });
+            localStorage.setItem(
+              "conversation",
+              JSON.stringify(storedMessages)
+            );
+
             speak(botReply);
           }
         } catch (error) {
@@ -221,7 +252,13 @@
         speech.lang = "en-US";
         speech.pitch = 1; // Natural pitch for a male voice
         speech.rate = 1; // Normal speaking rate
-        speech.voice = window.speechSynthesis.getVoices().find(voice => voice.name.includes("Google") && voice.gender === 'male') || null;
+        speech.voice =
+          window.speechSynthesis
+            .getVoices()
+            .find(
+              (voice) =>
+                voice.name.includes("Google") && voice.gender === "male"
+            ) || null;
         window.speechSynthesis.speak(speech);
       }
     </script>
