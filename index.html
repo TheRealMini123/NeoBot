@@ -134,6 +134,22 @@
       .input-container button:hover {
         background-color: #0056b3;
       }
+
+      .mic-btn {
+        padding: 12px;
+        background-color: #007bff;
+        color: #ffffff;
+        border: none;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+      }
+
+      .mic-btn:hover {
+        background-color: #0056b3;
+      }
     </style>
   </head>
   <body>
@@ -147,11 +163,46 @@
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Type a message..." />
         <button onclick="sendMessage()">Send</button>
+        <button class="mic-btn" onclick="startListening()">🎙️</button>
       </div>
     </div>
 
     <script>
       const apiKey = "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";
+      let recognition;
+
+      // Initialize SpeechRecognition
+      if (
+        "SpeechRecognition" in window ||
+        "webkitSpeechRecognition" in window
+      ) {
+        recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onresult = function (event) {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById("userInput").value = transcript;
+        };
+
+        recognition.onerror = function (event) {
+          console.error("Speech Recognition Error: ", event.error);
+        };
+
+        // Automatically click send button when user stops talking
+        recognition.onend = function () {
+          setTimeout(() => {
+            const inputField = document.getElementById("userInput");
+            if (inputField.value.trim()) {
+              document.querySelector("button[onclick='sendMessage()']").click();
+            }
+          }, 500); // Delay of 500ms after stopping speech
+        };
+      } else {
+        console.warn("Speech Recognition not supported in this browser.");
+      }
 
       async function sendMessage() {
         const userInput = document.getElementById("userInput").value;
@@ -229,6 +280,12 @@
                 voice.name.includes("Google") && voice.gender === "male"
             ) || null;
         window.speechSynthesis.speak(speech);
+      }
+
+      function startListening() {
+        if (recognition) {
+          recognition.start();
+        }
       }
     </script>
   </body>
