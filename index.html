@@ -134,22 +134,6 @@
       .input-container button:hover {
         background-color: #0056b3;
       }
-
-      .mic-btn {
-        padding: 12px;
-        background-color: #007bff;
-        color: #ffffff;
-        border: none;
-        border-radius: 50%;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        margin-left: 10px;
-      }
-
-      .mic-btn:hover {
-        background-color: #0056b3;
-      }
     </style>
   </head>
   <body>
@@ -163,41 +147,11 @@
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Type a message..." />
         <button onclick="sendMessage()">Send</button>
-        <button class="mic-btn" onclick="startListening()">🎙️</button>
       </div>
     </div>
 
     <script>
       const apiKey = "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";
-      let recognition;
-
-      // Initialize SpeechRecognition (check for mobile support)
-      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-
-        recognition.onresult = function (event) {
-          const transcript = event.results[0][0].transcript;
-          document.getElementById("userInput").value = transcript;
-        };
-
-        recognition.onerror = function (event) {
-          console.error("Speech Recognition Error: ", event.error);
-        };
-
-        recognition.onend = function () {
-          setTimeout(() => {
-            const inputField = document.getElementById("userInput");
-            if (inputField.value.trim()) {
-              document.querySelector("button[onclick='sendMessage()']").click();
-            }
-          }, 500); // Delay after stopping speech
-        };
-      } else {
-        console.warn("Speech Recognition not supported in this browser.");
-      }
 
       async function sendMessage() {
         const userInput = document.getElementById("userInput").value;
@@ -263,32 +217,12 @@
       }
 
       function speak(message) {
-        // Ensure speech synthesis works on mobile (especially Safari)
-        if ('speechSynthesis' in window) {
-          const speech = new SpeechSynthesisUtterance(message);
-          speech.lang = "en-US";
-          speech.pitch = 1;
-          speech.rate = 1;
-
-          // Check if it's a mobile device or Safari and use a compatible voice
-          const voices = window.speechSynthesis.getVoices();
-          if (voices.length > 0) {
-            speech.voice = voices[0]; // Default to the first available voice
-          }
-
-          // Handle Safari-specific quirks
-          if (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')) {
-            speechSynthesis.speak(speech);
-          } else {
-            speechSynthesis.speak(speech);
-          }
-        }
-      }
-
-      function startListening() {
-        if (recognition) {
-          recognition.start();
-        }
+        const speech = new SpeechSynthesisUtterance(message);
+        speech.lang = "en-US";
+        speech.pitch = 1; // Natural pitch for a male voice
+        speech.rate = 1; // Normal speaking rate
+        speech.voice = window.speechSynthesis.getVoices().find(voice => voice.name.includes("Google") && voice.gender === 'male') || null;
+        window.speechSynthesis.speak(speech);
       }
     </script>
   </body>
