@@ -263,22 +263,25 @@
       }
 
       function speak(message) {
+        // Ensure speech synthesis works on mobile (especially Safari)
         if ('speechSynthesis' in window) {
           const speech = new SpeechSynthesisUtterance(message);
           speech.lang = "en-US";
-          speech.pitch = 1; // Natural pitch for a male voice
-          speech.rate = 1; // Normal speaking rate
-          
-          // Check if mobile voice is available, else use default voice
-          speech.voice =
-            window.speechSynthesis.getVoices().find(
-              (voice) => voice.name.includes("Google") && voice.gender === "male"
-            ) ||
-            window.speechSynthesis.getVoices()[0]; // Default voice fallback
+          speech.pitch = 1;
+          speech.rate = 1;
 
-          window.speechSynthesis.speak(speech);
-        } else {
-          console.warn("Speech Synthesis is not supported on this device.");
+          // Check if it's a mobile device or Safari and use a compatible voice
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length > 0) {
+            speech.voice = voices[0]; // Default to the first available voice
+          }
+
+          // Handle Safari-specific quirks
+          if (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')) {
+            speechSynthesis.speak(speech);
+          } else {
+            speechSynthesis.speak(speech);
+          }
         }
       }
 
